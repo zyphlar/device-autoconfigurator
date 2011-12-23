@@ -47,7 +47,8 @@ if($getconfig == "1") {
 // When called with id and applied=1, mark as applied
 if(strlen($id) > 0 && $applied == "1") {
   try {
-    $updateapplied = $db->prepare("UPDATE DEVICES SET APPLIED=1 WHERE id=:id;");
+    $updateapplied = $db->prepare("UPDATE DEVICES SET APPLIED=1, CURRENTIP=:currentip WHERE id=:id;");
+    $updateapplied->bindParam(':currentip', $_SERVER['REMOTE_ADDR']); // store the remote client IP for calling blink.php later
     $updateapplied->bindParam(':id', $id);
     $updateapplied->execute();
   } catch (Exception $e) {

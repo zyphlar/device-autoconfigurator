@@ -1,12 +1,12 @@
 <?php
-
+//TODO: move this database section to an include file
 // config variables
 $dbpath = "configurator.db";
 
 // import and sanitize GET variables
 $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 $configdevices = filter_input_array(INPUT_GET, array('configdevices' => array('filter' => FILTER_SANITIZE_NUMBER_INT, 'flags'  => FILTER_REQUIRE_ARRAY)));
-if(isset($configdevices['configdevices']))
+if(isset($configdevices['configdevices']))      // we don't want the whole GET array, just the configdevices part.
   $configdevices = $configdevices['configdevices'];
 $applied = filter_input(INPUT_GET, 'applied', FILTER_SANITIZE_NUMBER_INT);
 $download = filter_input(INPUT_GET, 'download', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -30,7 +30,7 @@ try {
 // Create table if doesn't exist
 $q = $db->query("PRAGMA table_info(DEVICES)");
 if ( $q->rowCount() == 0 ) {
-  $db->query( "CREATE TABLE DEVICES ( id INTEGER PRIMARY KEY, config TEXT, ready INTEGER, sent INTEGER, applied INTEGER );" );
+  $db->query( "CREATE TABLE DEVICES ( id INTEGER PRIMARY KEY, config TEXT, currentip CHAR(255), ready INTEGER, sent INTEGER, applied INTEGER );" );
 }
 
 
@@ -91,8 +91,10 @@ if($configdevices != false && count($configdevices) > 0) {
 
 <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="GET">
   <h3>Devices</h3>
-  <input type="button" id="checkall" name="checkall" value="Check All" onClick="var c=new Array();c=document.getElementsByName('configdevices[]');for(var i=0;i<c.length;i++){c[i].checked=true;}" />
-  <input type="button" id="uncheckall" name="uncheckall" value="Uncheck All" onClick="var c=new Array();c=document.getElementsByName('configdevices[]');for(var i=0;i<c.length;i++){c[i].checked=false;}" />
+  <input type="button" id="checkall" name="checkall" value="Check All" 
+    onClick="var c=new Array();c=document.getElementsByName('configdevices[]');for(var i=0;i<c.length;i++){c[i].checked=true;}" />
+  <input type="button" id="uncheckall" name="uncheckall" value="Uncheck All" 
+    onClick="var c=new Array();c=document.getElementsByName('configdevices[]');for(var i=0;i<c.length;i++){c[i].checked=false;}" />
   <input type="button" value="Refresh" onclick="window.location.reload()">
   <ul id="devicelist">
 <?php while ($device = $devicelist->fetchObject()): ?>
@@ -101,7 +103,7 @@ if($configdevices != false && count($configdevices) > 0) {
       <?php echo $device->id ?>
       <?php if($device->ready=="1") { echo " <em>ready</em>";} ?>
       <?php if($device->sent=="1") { echo " <strong>sent</strong>";} ?>
-      <?php if($device->applied=="1") { echo " <strong>applied</strong>";} ?>
+      <?php if($device->applied=="1") { echo ' <strong>applied</strong> <a target="_blank" href="http://'.$device->currentip.'/blink.php">blink</a>';} ?>
     </li>
 <?php endwhile; ?>
   </ul>
